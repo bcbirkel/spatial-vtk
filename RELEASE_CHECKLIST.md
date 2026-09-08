@@ -44,7 +44,7 @@ statistics-module proposal out of this release.
 7. Push a review branch and obtain passing CI on its exact commit, including
    Python 3.10, 3.11 and 3.12, tutorials, docs and distribution checks. Confirm
    GitHub Pages and the testpypi/pypi Trusted Publisher environments.
-8. Keep 0.1.4rc1 for the candidate unless deliberately changing the version.
+8. Keep 0.1.4 for the candidate unless deliberately changing the version.
    Rebuild and revalidate if the code or version changes. Do not overwrite a
    previously published version. Publishing a GitHub Release triggers PyPI,
    including prereleases; manual Release dispatch defaults to TestPyPI.

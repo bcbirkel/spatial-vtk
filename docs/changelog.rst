@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.1.4rc1 (unreleased)
+0.1.4 (2026-09-08)
 ---------------------
 
 * Include verified five-event waveform inputs; generate processed handoffs in Step 1.
