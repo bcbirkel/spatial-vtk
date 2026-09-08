@@ -163,8 +163,8 @@ def build_metric_field(
         used.
     field_mode
         Value selector for the field. For long metric tables this is usually a
-        transform column such as ``"log2_residual"``. For wide metric tables,
-        ``"auto"``, ``"log2_ratio"``, or ``"score"`` are supported.
+        transform column such as ``"ln_residual"``. For wide metric tables,
+        ``"auto"`` (natural log), ``"ln_ratio"``, ``"log2_ratio"``, or ``"score"`` are supported.
     value_column
         Clearer alias for ``field_mode`` when selecting a long-table value
         column.
@@ -205,19 +205,19 @@ def build_metric_field(
         ]
     ].copy()
     if metric_name == "rms_ratio":
-        if field_mode not in {"auto", "log2_ratio"}:
-            raise ValueError("rms_ratio only supports field_mode='auto' or 'log2_ratio'.")
+        if field_mode not in {"auto", "ln_ratio", "ln_residual", "log2_ratio"}:
+            raise ValueError("rms_ratio supports auto, ln_ratio, ln_residual, or log2_ratio.")
         with np.errstate(divide="ignore", invalid="ignore"):
-            out["field_value"] = np.log2(as_float_series(df["rms_ratio"]))
-        source = "log2_ratio"
+            out["field_value"] = (np.log2 if field_mode == "log2_ratio" else np.log)(as_float_series(df["rms_ratio"]))
+        source = "log2_ratio" if field_mode == "log2_ratio" else "ln_ratio"
     else:
         obs_col = f"{metric_name}_obs"
         syn_col = f"{metric_name}_syn"
         score_col = f"{metric_name}_score"
-        if field_mode in {"auto", "log2_ratio"} and obs_col in df.columns and syn_col in df.columns:
+        if field_mode in {"auto", "ln_ratio", "ln_residual", "log2_ratio"} and obs_col in df.columns and syn_col in df.columns:
             with np.errstate(divide="ignore", invalid="ignore"):
-                out["field_value"] = np.log2(as_float_series(df[obs_col]) / as_float_series(df[syn_col]))
-            source = "log2_obs_over_syn"
+                out["field_value"] = (np.log2 if field_mode == "log2_ratio" else np.log)(as_float_series(df[obs_col]) / as_float_series(df[syn_col]))
+            source = "log2_obs_over_syn" if field_mode == "log2_ratio" else "ln_obs_over_syn"
         elif score_col in df.columns and field_mode in {"auto", "score"}:
             out["field_value"] = as_float_series(df[score_col])
             source = "score"
@@ -242,7 +242,8 @@ def _build_long_metric_field(df: pd.DataFrame, metric: str, *, field_mode: str =
         Metric name to keep, or ``"all"`` to use all rows.
     field_mode
         Value column or transform to use. ``"auto"`` prefers
-        ``log2_residual``, then ``residual``, then ``score``.
+        ``ln_residual``; legacy log2 values are converted to ln, preserving QC.
+        Raw pairs use ln; arithmetic residual and score are fallback columns.
 
     Returns
     -------
@@ -260,18 +261,21 @@ def _build_long_metric_field(df: pd.DataFrame, metric: str, *, field_mode: str =
     value_column: str | None = None
     if field_mode in work.columns:
         value_column = field_mode
-    elif field_mode in {"auto", "log2_ratio"} and {"value_obs", "value_syn"} <= set(work.columns):
-        work = work.copy()
+    elif field_mode in {"auto", "ln_ratio", "ln_residual"} and "ln_residual" in work.columns:
+        value_column = "ln_residual"
+    elif field_mode in {"auto", "ln_ratio", "ln_residual"} and "log2_residual" in work.columns:
+        work["ln_residual"] = as_float_series(work["log2_residual"]) * np.log(2.0)
+        value_column = "ln_residual"
+    elif field_mode in {"auto", "ln_ratio", "ln_residual", "log2_ratio"} and {"value_obs", "value_syn"} <= set(work.columns):
+        value_column = "log2_residual" if field_mode == "log2_ratio" else "ln_residual"
         with np.errstate(divide="ignore", invalid="ignore"):
-            work["__field_value"] = np.log2(as_float_series(work["value_obs"]) / as_float_series(work["value_syn"]))
-        value_column = "__field_value"
+            logarithm = np.log2 if field_mode == "log2_ratio" else np.log
+            work[value_column] = logarithm(as_float_series(work["value_obs"]) / as_float_series(work["value_syn"]))
     elif field_mode == "auto":
-        for candidate in ("log2_residual", "residual", "score"):
+        for candidate in ("residual", "score"):
             if candidate in work.columns:
                 value_column = candidate
                 break
-    elif field_mode == "score" and "score" in work.columns:
-        value_column = "score"
 
     if value_column is None:
         available = [column for column in ("log2_residual", "residual", "score", "value_obs", "value_syn") if column in work.columns]

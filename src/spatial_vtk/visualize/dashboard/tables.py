@@ -11,8 +11,8 @@ DEFAULT_DASHBOARD_VALUE_COLUMNS: tuple[str, ...] = (
     "value_obs",
     "value_syn",
     "residual",
-    "log2_residual",
     "ln_residual",
+    "log2_residual",
     "anderson_2004_gof",
     "olsen_mayhew_gof",
     "score",
@@ -20,8 +20,8 @@ DEFAULT_DASHBOARD_VALUE_COLUMNS: tuple[str, ...] = (
 )
 SUMMARY_VALUE_COLUMNS: tuple[str, ...] = (
     "residual",
-    "log2_residual",
     "ln_residual",
+    "log2_residual",
     "anderson_2004_gof",
     "olsen_mayhew_gof",
     "score",

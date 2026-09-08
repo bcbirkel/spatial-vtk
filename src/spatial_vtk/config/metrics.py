@@ -33,7 +33,7 @@ from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 
 DEFAULT_METRIC_GROUPS: tuple[str, ...] = ("amplitude",)
 DEFAULT_METRICS: tuple[str, ...] = ("PGA",)
-DEFAULT_TRANSFORMS: tuple[str, ...] = ("log2_residual",)
+DEFAULT_TRANSFORMS: tuple[str, ...] = ("ln_residual",)
 DEFAULT_OUTPUT_MODE = "full"
 
 VALID_OUTPUT_MODES = ("observed", "synthetic", "residual", "gof", "full")

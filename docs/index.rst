@@ -12,6 +12,7 @@ statistics, mapping, and dashboard preparation.
    :maxdepth: 2
 
    installation
+   phasenet
    data_formats
    configuration
    package_overview

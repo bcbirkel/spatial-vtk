@@ -76,7 +76,7 @@ def test_arrival_picks_metric_examples_and_rotation(tmp_path):
     try:
         resolved = resolve_arrival_picker()
     except PhaseNetUnavailableError as exc:
-        assert "PhaseNet is the default arrival picker" in str(exc)
+        assert "compatible external AI4EPS/PhaseNet" in str(exc)
     else:
         assert "phasenet" in resolved.lower()
 

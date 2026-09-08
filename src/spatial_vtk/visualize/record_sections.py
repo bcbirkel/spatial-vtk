@@ -556,7 +556,7 @@ def plot_observed_synthetic_record_section(
         ax.set_xlim(0.0, max(max_time, 1.0))
         ax.grid(True, alpha=0.18)
     axes[0].set_ylabel("Distance (km)" if distance_col in rows.columns else "Record")
-    axes[0].legend(loc="upper right")
+    axes[0].legend(loc="upper left", bbox_to_anchor=(1.01, 1.0))
     fig.suptitle(title_with_subtitle(title, filter_label), y=0.99)
     fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.95))
     return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)

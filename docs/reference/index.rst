@@ -8,3 +8,5 @@ The reference pages document the public Python package and CLI.
 
    python_api
    cli_api
+   Full Function Index </genindex>
+   Python Module Index </modindex>

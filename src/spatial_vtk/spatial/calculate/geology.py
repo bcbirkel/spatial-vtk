@@ -575,6 +575,7 @@ def bootstrap_contrast_table(
     )
     rng = np.random.default_rng(seed)
     log2_context = _is_log2_ratio_field(value_col, work)
+    ln_context = _is_ln_ratio_field(value_col, work)
     rows = []
     for comparison_side, baseline_side in contrast_specs:
         comparison_label = _contrast_values_label(comparison_side)
@@ -606,7 +607,7 @@ def bootstrap_contrast_table(
         row = {**metadata, **result}
         row["n_comparison_stations"] = row.get("n_left_stations")
         row["n_baseline_stations"] = row.get("n_right_stations")
-        row.update(_effect_interpretation(row, log2_context=log2_context))
+        row.update(_effect_interpretation(row, log2_context=log2_context, ln_context=ln_context))
         rows.append(row)
     out = pd.DataFrame(rows, columns=columns) if rows else pd.DataFrame(columns=columns)
     if outpath is not None:
@@ -688,7 +689,7 @@ def _contrast_specs(
     return [(group, selected_baseline) for group in comparison_groups if group]
 
 
-def _effect_interpretation(row: dict[str, object], *, log2_context: bool) -> dict[str, object]:
+def _effect_interpretation(row: dict[str, object], *, log2_context: bool, ln_context: bool = False) -> dict[str, object]:
     """Build percent and significance columns for one contrast row."""
 
     effect = _finite_float(row.get("effect"))
@@ -704,13 +705,14 @@ def _effect_interpretation(row: dict[str, object], *, log2_context: bool) -> dic
         "significant_95": significant_95,
         "significant_p05": significant_p05,
     }
-    if log2_context:
+    if log2_context or ln_context:
+        convert = (lambda value: float(np.expm1(value) * 100.0)) if ln_context else _log2_effect_to_percent
         if np.isfinite(effect):
-            out["percent_effect"] = _log2_effect_to_percent(effect)
+            out["percent_effect"] = convert(effect)
         if np.isfinite(ci_low):
-            out["percent_ci_low"] = _log2_effect_to_percent(ci_low)
+            out["percent_ci_low"] = convert(ci_low)
         if np.isfinite(ci_high):
-            out["percent_ci_high"] = _log2_effect_to_percent(ci_high)
+            out["percent_ci_high"] = convert(ci_high)
     return out
 
 
@@ -730,6 +732,17 @@ def _is_log2_ratio_field(value_col: str | None, df: pd.DataFrame) -> bool:
     if text in {"field_value", "field_centered", "mean_centered", "station_mean_centered"} and "field_source" in df.columns:
         source_text = " ".join(str(value).lower() for value in pd.unique(df["field_source"].dropna()))
         return "log2" in source_text
+    return False
+
+
+def _is_ln_ratio_field(value_col: str | None, df: pd.DataFrame) -> bool:
+    """Identify natural-log values including spatial field provenance."""
+    text = str(value_col or "").lower()
+    if "ln_" in text:
+        return True
+    if text in {"field_value", "field_centered", "mean_centered", "station_mean_centered"} and "field_source" in df.columns:
+        sources = df["field_source"].dropna().astype(str)
+        return bool(len(sources) and sources.str.contains("ln_", regex=False).all())
     return False
 
 

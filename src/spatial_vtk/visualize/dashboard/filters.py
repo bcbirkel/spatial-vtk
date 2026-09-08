@@ -27,14 +27,14 @@ def filter_dashboard_metrics(
     """Filter one metrics dashboard table."""
 
     out = df.copy()
-    if models and "model" in out.columns:
+    if models is not None and "model" in out.columns:
         keep = {str(model) for model in models}
         out = out[out["model"].astype(str).isin(keep)]
     if metric and "metric" in out.columns:
         public_metric = normalize_metric_name(metric)
         metric_values = out["metric"].map(normalize_metric_name)
         out = out[metric_values == public_metric]
-    if bands and "band" in out.columns:
+    if bands is not None and "band" in out.columns:
         out = _filter_band_labels(out, bands, band_columns=("band",))
     if value_column and value_column not in out.columns:
         raise ValueError(f"Selected dashboard value column is not available: {value_column}")
@@ -180,7 +180,7 @@ def _filter_band_labels(df: pd.DataFrame, bands: Iterable[str], *, band_columns:
     requested_raw = {str(band).strip() for band in bands if str(band).strip()}
     requested_labels = {band_display_label(band) for band in requested_raw}
     if not requested_raw:
-        return df
+        return df.iloc[0:0]
     columns = [column for column in band_columns if column in df.columns]
     if not columns:
         return df

@@ -14,10 +14,26 @@ AGENTS.md
 inputs/basemaps/
 .DS_Store
 
-# Compact example metadata can be versioned, but waveform binaries and
-# processed copies stay local.
-/data/examples/example_five_event_subset/observed/*.mseed
+# Original tutorial MiniSEED inputs are versioned with checksums.
+# Pickles and generated processed copies stay local.
 /data/examples/example_five_event_subset/observed/*.pkl
-/data/examples/example_five_event_subset/synthetics/
 /data/examples/example_five_event_subset/processed/
 /data/examples/example_five_event_subset/metadata/selected_event_stations_lowpass_1hz.csv
+
+.venv/
+
+# Whitelist only the ten public tutorial waveform inputs.
+/data/examples/example_five_event_subset/observed/*.mseed
+!/data/examples/example_five_event_subset/observed/ci38038071.mseed
+!/data/examples/example_five_event_subset/observed/ci38695658.mseed
+!/data/examples/example_five_event_subset/observed/ci39756418.mseed
+!/data/examples/example_five_event_subset/observed/ci39812319.mseed
+!/data/examples/example_five_event_subset/observed/ci40699207.mseed
+/data/examples/example_five_event_subset/synthetics/*
+!/data/examples/example_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf/
+/data/examples/example_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf/*
+!/data/examples/example_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci38038071.mseed
+!/data/examples/example_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci38695658.mseed
+!/data/examples/example_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci39756418.mseed
+!/data/examples/example_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci39812319.mseed
+!/data/examples/example_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci40699207.mseed

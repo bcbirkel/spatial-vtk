@@ -66,7 +66,7 @@ def test_metric_workflow_runs_tasks_and_applies_side_specific_spectral_qc(tmp_pa
         models=("m1",),
         metric_groups=("amplitude", "spectral", "cross_correlation"),
         transforms=("log2_residual",),
-        spectral_periods_s=(1.0, 2.0),
+        spectral_periods_s=(1.0, 2.0, 2.5),
         output_mode="full",
         synthetic_max_frequency_hz=0.5,
     )
@@ -78,8 +78,9 @@ def test_metric_workflow_runs_tasks_and_applies_side_specific_spectral_qc(tmp_pa
         spectral_min_cycles_in_record=1.0,
         disable_spectral_relative_amplitude_qc=True,
     )
-    assert len(tasks) == 1
-    assert tasks[0].metrics == ("PGA", "PSA", "original_cc")
+    assert len(tasks) == 2
+    assert tasks[0].metrics == ("PGA", "original_cc")
+    assert tasks[1].spectral_periods_s == (2.5,)
 
     rows = run_metric_tasks(tasks)
     pga = rows.loc[rows["metric"].eq("PGA")].iloc[0]
@@ -96,13 +97,10 @@ def test_metric_workflow_runs_tasks_and_applies_side_specific_spectral_qc(tmp_pa
     assert cc_summary["med_value"] == pytest.approx(1.0, abs=1e-6)
     assert cc_summary["n"] == 1
 
-    psa_period_1 = rows.loc[rows["metric"].eq("PSA") & rows["period_s"].eq(1.0)].iloc[0]
-    assert psa_period_1["syn_qc_status"] == "fail"
-    assert psa_period_1["comparison_qc_status"] == "fail"
-    assert "period_below_min_supported_period" in psa_period_1["syn_qc_reason"]
-
-    psa_period_2 = rows.loc[rows["metric"].eq("PSA") & rows["period_s"].eq(2.0)].iloc[0]
-    assert psa_period_2["comparison_qc_status"] == "pass"
+    psa = rows.loc[rows["metric"].eq("PSA")]
+    assert psa["period_s"].tolist() == [2.5]
+    assert psa.iloc[0]["comparison_qc_status"] == "pass"
+    assert psa.iloc[0]["log2_residual"] == pytest.approx(1.0)
 
 
 def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> None:

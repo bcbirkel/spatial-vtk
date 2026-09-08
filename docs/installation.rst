@@ -5,7 +5,8 @@ This page walks you through setting up Spatial-VTK in a conda environment,
 installing the package, and running a few quick checks before you start a
 workflow.
 
-You will need Python 3.10 through 3.13 and conda. If you are new to conda, the
+The supported range is Python 3.10 through 3.12. Conda is optional; a standard
+``python -m venv .venv`` environment also works. If you are new to conda, the
 `conda getting started guide <https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html>`__
 is a good place to start.
 
@@ -122,3 +123,17 @@ environment with many unrelated packages.
 If map figures render without a basemap, check your network connection.
 Spatial-VTK uses ``contextily`` for basemap tiles, so basemap-backed maps need
 network access unless you already have the required tiles cached locally.
+
+Optional arrival picking and release status
+-------------------------------------------
+
+The base package includes metric/statistics and dashboard dependencies.
+``waveforms`` adds waveform-processing tools; ``notebooks`` adds the kernel
+and execution tools. The external PhaseNet backend is configured separately;
+see :doc:`phasenet`. No machine-learning backend is required for these tutorials.
+
+The usability repairs are prepared as ``0.1.4rc1`` and are unreleased. Until the
+maintainer publishes them, use the repaired source checkout or its locally built
+wheel. Installing the existing PyPI ``0.1.3`` does not obtain these fixes.
+Local validation uses Python 3.12; CI also targets 3.10 and 3.11. These two
+versions must be checked in CI before release.

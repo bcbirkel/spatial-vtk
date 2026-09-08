@@ -96,13 +96,13 @@ def test_wide_metric_summary_helpers_support_legacy_and_named_metrics() -> None:
 
     residual = metric_residual_series(metrics, "C5")
     assert residual is not None
-    assert residual.iloc[0] == pytest.approx(1.0)
+    assert residual.iloc[0] == pytest.approx(np.log(2.0))
 
     station_table, residual_col = build_station_residual_table(metrics, "C5")
     assert station_table is not None
-    assert residual_col == "C5_residual_log2"
+    assert residual_col == "C5_residual_ln"
     assert set(station_table.columns) == {"station", "station_lon", "station_lat", residual_col}
-    assert station_table.loc[station_table["station"].eq("AAA"), residual_col].iloc[0] == pytest.approx(1.0)
+    assert station_table.loc[station_table["station"].eq("AAA"), residual_col].iloc[0] == pytest.approx(np.log(2.0))
 
     means = station_mean_table(metrics, value_columns=["C5_score"])
     assert means.loc[means["station"].eq("AAA"), "C5_score"].iloc[0] == pytest.approx(7.5)
@@ -125,7 +125,7 @@ def test_long_metric_summary_helper_uses_public_row_contract() -> None:
             "station": ["AAA", "AAA", "BBB"],
             "passband": ["1-3s", "1-3s", "1-3s"],
             "metric": ["PGA", "PGV", "PGA"],
-            "log2_residual": [1.0, -0.5, 0.25],
+            "ln_residual": [1.0, -0.5, 0.25],
         }
     )
     summary = summarize_long_metric_table(long_metrics)

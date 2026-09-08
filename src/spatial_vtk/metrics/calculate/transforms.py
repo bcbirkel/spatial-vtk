@@ -146,7 +146,7 @@ def compare_metric_values(
     observed_value: float,
     synthetic_value: float,
     *,
-    transforms: Iterable[str] = VALID_TRANSFORMS,
+    transforms: Iterable[str] = ("ln_residual",),
 ) -> dict[str, float]:
     """Apply requested observed/synthetic comparison transforms.
 

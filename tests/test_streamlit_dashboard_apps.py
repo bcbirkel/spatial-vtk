@@ -239,3 +239,10 @@ def test_streamlit_entrypoints_import_and_launch_command():
     assert command[:4][-2:] == ["streamlit", "run"]
     assert "--server.port" in command
     assert "8509" in command
+
+
+def test_empty_multiselect_means_no_rows():
+    data = _metric_rows()
+    assert filter_dashboard_metrics(data, models=[]).empty
+    assert filter_dashboard_metrics(data, bands=[]).empty
+    assert len(filter_dashboard_metrics(data, models=None, bands=None)) == len(data)

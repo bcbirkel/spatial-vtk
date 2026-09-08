@@ -81,7 +81,7 @@ class MetricWorkflowTask:
     period_min_s: float | None = None
     period_max_s: float | None = None
     metrics: tuple[str, ...] = ("PGA",)
-    transforms: tuple[str, ...] = ("log2_residual",)
+    transforms: tuple[str, ...] = ("ln_residual",)
     output_mode: str = "full"
     spectral_periods_s: tuple[float, ...] = ()
     synthetic_max_frequency_hz: float | None = None
@@ -92,6 +92,7 @@ class MetricWorkflowTask:
     spectral_min_cycles_in_record: float = 3.0
     disable_spectral_relative_amplitude_qc: bool = False
     use_qc: bool = True
+    spectral_preprocessing: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         """Return this task as a JSON/CSV-safe dictionary.
@@ -136,7 +137,7 @@ class MetricWorkflowTask:
         for column in ("dt", "period_min_s", "period_max_s", "synthetic_max_frequency_hz", "waveform_lowpass_hz", "waveform_resample_hz", "spectral_relative_amplitude_threshold", "spectral_min_cycles_in_record"):
             data[column] = _optional_float(data.get(column))
         data["waveform_filter_order"] = _optional_int(data.get("waveform_filter_order"))
-        for column in ("disable_spectral_relative_amplitude_qc", "use_qc"):
+        for column in ("disable_spectral_relative_amplitude_qc", "use_qc", "spectral_preprocessing"):
             data[column] = _bool_value(data.get(column))
         return cls(**data)
 
@@ -166,11 +167,12 @@ def plan_metric_tasks(
     use_qc
         Whether tasks should honor QC tables during execution.
     spectral_relative_amplitude_threshold
-        Relative amplitude threshold copied into each task for spectral QC.
+        Legacy argument retained for serialized task compatibility. The common-window
+        PSA/FAS branch does not apply relative-amplitude rejection.
     spectral_min_cycles_in_record
         Minimum usable cycles copied into each task for spectral QC.
     disable_spectral_relative_amplitude_qc
-        Whether each task should skip relative-amplitude spectral QC.
+        Legacy argument; planned PSA/FAS tasks always skip relative-amplitude QC.
 
     Returns
     -------
@@ -190,19 +192,24 @@ def plan_metric_tasks(
     metrics = resolve_metric_names(plan.metrics, plan.metric_groups)
     passbands = plan.passbands or ((None, None),)
     tasks: list[MetricWorkflowTask] = []
+    ordinary = tuple(metric for metric in metrics if metric not in {"PSA", "FAS"})
+    spectral = tuple(metric for metric in metrics if metric in {"PSA", "FAS"})
+    requests = [(ordinary, lo, hi) for lo, hi in passbands] if ordinary else []
+    if spectral:
+        requests.append((spectral, None, None))
 
     if output_mode == "observed":
         source_rows = _filter_inventory(obs, components=plan.components, models=())
         for _, obs_row in source_rows.iterrows():
-            for period_min_s, period_max_s in passbands:
-                tasks.append(_task_from_rows(obs_row, None, plan, metrics, period_min_s, period_max_s, use_qc, spectral_relative_amplitude_threshold, spectral_min_cycles_in_record, disable_spectral_relative_amplitude_qc))
+            for task_metrics, period_min_s, period_max_s in requests:
+                tasks.append(_task_from_rows(obs_row, None, plan, task_metrics, period_min_s, period_max_s, use_qc, spectral_relative_amplitude_threshold, spectral_min_cycles_in_record, disable_spectral_relative_amplitude_qc))
         return tasks
 
     if output_mode == "synthetic":
         source_rows = _filter_inventory(syn, components=plan.components, models=plan.models)
         for _, syn_row in source_rows.iterrows():
-            for period_min_s, period_max_s in passbands:
-                tasks.append(_task_from_rows(None, syn_row, plan, metrics, period_min_s, period_max_s, use_qc, spectral_relative_amplitude_threshold, spectral_min_cycles_in_record, disable_spectral_relative_amplitude_qc))
+            for task_metrics, period_min_s, period_max_s in requests:
+                tasks.append(_task_from_rows(None, syn_row, plan, task_metrics, period_min_s, period_max_s, use_qc, spectral_relative_amplitude_threshold, spectral_min_cycles_in_record, disable_spectral_relative_amplitude_qc))
         return tasks
 
     if obs.empty or syn.empty:
@@ -213,8 +220,8 @@ def plan_metric_tasks(
     for _, obs_row in obs_rows.iterrows():
         candidates = syn_index.get((str(obs_row["event_id"]), str(obs_row["station"]), str(obs_row["component"])), [])
         for syn_row in candidates:
-            for period_min_s, period_max_s in passbands:
-                tasks.append(_task_from_rows(obs_row, syn_row, plan, metrics, period_min_s, period_max_s, use_qc, spectral_relative_amplitude_threshold, spectral_min_cycles_in_record, disable_spectral_relative_amplitude_qc))
+            for task_metrics, period_min_s, period_max_s in requests:
+                tasks.append(_task_from_rows(obs_row, syn_row, plan, task_metrics, period_min_s, period_max_s, use_qc, spectral_relative_amplitude_threshold, spectral_min_cycles_in_record, disable_spectral_relative_amplitude_qc))
     return tasks
 
 
@@ -403,6 +410,23 @@ def _task_from_rows(
         "disable_spectral_relative_amplitude_qc": bool(disable_spectral_relative_amplitude_qc),
         "use_qc": bool(use_qc),
     }
+    if set(metrics).intersection({"PSA", "FAS"}):
+        cutoff = payload["synthetic_max_frequency_hz"]
+        if cutoff is None or not np.isfinite(cutoff) or cutoff <= 0:
+            raise ValueError("PSA/FAS require a positive synthetic_max_frequency_hz (the spectral lowpass cutoff).")
+        requested = plan.spectral_periods_s or tuple(np.arange(1.5, 5.1, 0.5))
+        periods = tuple(float(period) for period in requested if np.isfinite(period) and period > 1.0 / cutoff)
+        if not periods:
+            raise ValueError("No PSA/FAS periods lie strictly above 1 / synthetic_max_frequency_hz; exclude the simulation-frequency boundary.")
+        for source, inventory_row in (("obs", obs_row), ("syn", syn_row)):
+            if inventory_row is not None:
+                raw = inventory_row.get("raw_waveform_path", "")
+                if pd.notna(raw) and str(raw).strip():
+                    payload[f"{source}_waveform_path"] = str(raw)
+        payload.update(spectral_preprocessing=True, passband=f"lowpass {cutoff:g} Hz",
+                       spectral_periods_s=periods, waveform_lowpass_hz=cutoff,
+                       waveform_resample_hz=25.0, waveform_filter_order=4,
+                       disable_spectral_relative_amplitude_qc=True)
     task_id = _task_id(payload)
     return MetricWorkflowTask(task_id=task_id, **payload)
 

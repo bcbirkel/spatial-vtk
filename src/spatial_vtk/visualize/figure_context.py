@@ -223,10 +223,14 @@ def context_value_label(value_col: str, df: pd.DataFrame | None = None) -> str:
         source = _source_text(df)
         if "log2" in source:
             label = "Event-centered log2(observed / synthetic)"
+        elif "ln" in source:
+            label = "Event-centered ln(observed / synthetic)"
         elif source:
             label = f"Event-centered {display_label(source)}"
     if str(value_col) in {"mean_centered", "station_mean_centered"} and df is not None and "log2" in _source_text(df):
         label = "Mean event-centered log2(observed / synthetic)"
+    if str(value_col) in {"mean_centered", "station_mean_centered"} and df is not None and "ln" in _source_text(df):
+        label = "Mean event-centered ln(observed / synthetic)"
     return label
 
 
@@ -412,14 +416,24 @@ def add_below_axes_table(
         omitted = len(clean_rows) - max_visible_rows
         clean_rows = clean_rows[:max_visible_rows] + [[f"{omitted} additional rows omitted"] + [""] * (len(columns) - 1)]
     row_count = len(clean_rows) + 1
-    bottom_margin = min(0.58, 0.24 + 0.055 * row_count)
-    table_height = min(0.40, 0.08 + 0.05 * row_count)
-    if hasattr(ax.figure, "set_layout_engine"):
-        try:
-            ax.figure.set_layout_engine(None)
-        except Exception:
-            pass
-    ax.figure.subplots_adjust(bottom=bottom_margin)
+    figure = ax.figure
+    if hasattr(figure, "set_layout_engine"):
+        figure.set_layout_engine(None)
+    figure.canvas.draw()
+    renderer = figure.canvas.get_renderer()
+    # Measure rotated tick labels and the axis label before placing the table.
+    label_drop = max(0.0, ax.bbox.y0 - ax.get_tightbbox(renderer).y0) / figure.dpi
+    width, height = figure.get_size_inches()
+    position = ax.get_position()
+    plot_height = position.height * height
+    table_inches = row_count * max(0.28, 2.0 * font_size / 72.0)
+    gap_inches = 0.22
+    extra_height = table_inches + gap_inches + label_drop
+    figure.set_size_inches(width, height + extra_height, forward=True)
+    ax.set_position([position.x0, (position.y0 * height + extra_height) / (height + extra_height),
+                     position.width, plot_height / (height + extra_height)])
+    table_height = table_inches / plot_height
+    table_top = -(label_drop + gap_inches) / plot_height
     table = ax.table(
         cellText=clean_rows,
         colLabels=list(columns),
@@ -427,7 +441,7 @@ def add_below_axes_table(
         colLoc="left",
         colWidths=list(col_widths) if col_widths is not None else None,
         loc="bottom",
-        bbox=[0.0, -0.34 - table_height, 1.0, table_height],
+        bbox=[0.0, table_top - table_height, 1.0, table_height],
     )
     table.auto_set_font_size(False)
     table.set_fontsize(font_size)

@@ -57,7 +57,7 @@ Detailed Command Reference
 Plotting and Mapping Notes
 --------------------------
 
-Most plotting and mapping commands accept ``--input`` for the main table, ``--output`` for the figure path, and ``--kwargs key=value`` for function-specific settings such as ``value_col=log2_residual`` or ``title='Residuals by distance'``. Commands that need additional tables accept ``--table argument_name=path`` and, where available, convenience aliases such as ``--events`` or ``--stations``.
+Most plotting and mapping commands accept ``--input`` for the main table, ``--output`` for the figure path, and ``--kwargs key=value`` for function-specific settings such as ``value_col=ln_residual`` or ``title='Residuals by distance'``. Commands that need additional tables accept ``--table argument_name=path`` and, where available, convenience aliases such as ``--events`` or ``--stations``.
 
 Map commands also accept ``--config`` and ``--bounds`` so you can reuse named bounds from your project config. Basemaps are enabled by default for map figures; use ``--no-basemap`` only when you explicitly want a data-only map.
 

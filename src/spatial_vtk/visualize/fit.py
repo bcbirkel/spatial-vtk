@@ -147,6 +147,9 @@ def scatter_fit_label(method_name: str, x: np.ndarray, y: np.ndarray, fit_x: np.
     if normalize_fit_method(method_name) == "point-to-point":
         return "_nolegend_"
     prefix = f"{label} " if label else ""
+    if method_name.lower().split(":")[-1] == "lowess":
+        return f"{prefix}LOWESS trend"
+
     slope, fit_r = fit_line_stats(x, y, fit_x, fit_y)
     if method_name.startswith("best:"):
         fit_name = scatter_fit_display_name(method_name.split(":", 1)[1])

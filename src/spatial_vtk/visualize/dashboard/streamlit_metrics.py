@@ -75,6 +75,10 @@ def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: 
         selected_models = st.multiselect("Models", options=all_models, default=all_models)
         selected_metric = st.selectbox("Metric", options=all_metrics, format_func=metric_display_name)
         selected_bands = st.multiselect("Passbands", options=all_bands, default=data_bands or all_bands, format_func=band_display_label)
+        if not selected_models or not selected_bands:
+            st.info("No data selected. Choose at least one model and one passband.")
+            st.metric("Rows", "0")
+            st.stop()
         selected_component = st.selectbox("Component", options=component_options) if component_options else "all"
         value_source = filter_dashboard_metrics(
             summaries["model_metric_band"],
@@ -85,12 +89,12 @@ def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: 
         )
         value_columns = _available_nonempty_value_columns(value_source)
         if not value_columns:
-            st.error("No observed, synthetic, residual, or score value columns are available for the selected filters.")
+            st.info("No observed, synthetic, residual, or score value columns are available for the selected filters.")
             return
         value_col = st.selectbox("Displayed Value", options=value_columns, format_func=value_column_display_name)
         distance_range = _range_slider_from_columns("Distance (km)", summaries["station_rollup"], ("med_dist_km", "distance_km"))
         vs30_range = _range_slider_from_columns("Vs30", summaries["station_rollup"], ("Vs30", "vs30"))
-        basemap = st.selectbox("Basemap", options=list(BASEMAPS), index=list(BASEMAPS).index("Carto Light"))
+        basemap = st.selectbox("Basemap", options=list(BASEMAPS), index=list(BASEMAPS).index("Esri Imagery"))
         marker_cluster = st.checkbox("Cluster map markers", value=True)
         max_markers = st.number_input("Maximum map markers", min_value=100, max_value=50000, value=3000, step=100)
 

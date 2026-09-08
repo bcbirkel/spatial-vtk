@@ -54,7 +54,7 @@ def prepare_metric_workflow_outputs(
         Optional metadata tables joined before spatial/dashboard preparation.
     residual_column
         Optional transform column exposed as canonical ``residual``. When
-        omitted, workflow rows prefer ``log2_residual`` if no ``residual``
+        omitted, workflow rows prefer ``ln_residual`` if no ``residual``
         column exists.
     score_column
         Optional GOF column exposed as canonical ``score``.

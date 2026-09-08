@@ -108,3 +108,38 @@ def test_station_event_beachball_map_uses_basemap_helper(monkeypatch: pytest.Mon
     assert fig.axes[0].get_xlim() == pytest.approx((-118.432, -117.968))
     assert fig.axes[0].get_ylim() == pytest.approx((33.97, 34.28))
     plt.close(fig)
+
+
+def test_required_basemaps_reject_opt_out_and_record_failure(monkeypatch, tmp_path):
+    import json
+    monkeypatch.setenv("SVTK_REQUIRE_BASEMAP", "1")
+    monkeypatch.setenv("SVTK_NO_BASEMAP", "1")
+    audit = tmp_path / "audit.jsonl"
+    monkeypatch.setenv("SVTK_BASEMAP_AUDIT", str(audit))
+    fig, ax = plt.subplots()
+    with pytest.raises(RuntimeError, match="SVTK_NO_BASEMAP"):
+        add_contextily_basemap(ax, on_error="ignore")
+    assert not ax.spatial_vtk_basemap["success"]
+    assert not json.loads(audit.read_text())["success"]
+    plt.close(fig)
+
+
+def test_required_basemaps_override_silent_fallback(monkeypatch, tmp_path):
+    monkeypatch.setenv("SVTK_REQUIRE_BASEMAP", "1")
+    monkeypatch.delenv("SVTK_NO_BASEMAP", raising=False)
+    original_import = builtins.__import__
+    def missing(name, *args, **kwargs):
+        if name == "contextily":
+            raise ModuleNotFoundError("contextily unavailable")
+        return original_import(name, *args, **kwargs)
+    monkeypatch.setattr(builtins, "__import__", missing)
+    fig, ax = plt.subplots()
+    with pytest.raises(RuntimeError, match="contextily unavailable"):
+        add_contextily_basemap(ax, on_error="ignore", cache_dir=tmp_path)
+    plt.close(fig)
+
+
+def test_basemap_cache_can_be_shared_between_checkouts(monkeypatch, tmp_path):
+    from spatial_vtk.spatial.map.basemaps import default_basemap_cache_dir
+    monkeypatch.setenv("SVTK_BASEMAP_CACHE", str(tmp_path))
+    assert default_basemap_cache_dir() == tmp_path.resolve()

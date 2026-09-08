@@ -25,11 +25,11 @@ REQUIRED_PICK_COLUMNS = (
 OPTIONAL_PICK_COLUMNS = ("source",)
 
 PHASENET_INSTALL_MESSAGE = (
-    "PhaseNet is the default arrival picker for spatial-vtk, but no PhaseNet "
-    "command was found. Install the package dependency `phasenet`, set "
-    "SVTK_PHASENET_COMMAND to the picker command, or pass an explicit picker "
-    "command. Use picker='catalog' only when you are intentionally loading an "
-    "existing pick catalog."
+    "PhaseNet requires a compatible external AI4EPS/PhaseNet TensorFlow installation. "
+    "Set SVTK_PHASENET_COMMAND to its Python interpreter and absolute phasenet/predict.py path, "
+    "and pass model_dir with pretrained checkpoints. The PyPI phasenet package is a different "
+    "PyTorch interface and is not supported by this adapter. See docs/phasenet.rst. "
+    "Use picker='catalog' only to load existing picks; no alternative picker is substituted."
 )
 
 
@@ -51,25 +51,18 @@ def find_phasenet_command(explicit_command: str | None = None) -> str | None:
         Command text when PhaseNet appears available; otherwise ``None``.
     """
 
-    candidates = [
-        explicit_command,
-        os.environ.get("SVTK_PHASENET_COMMAND"),
-        os.environ.get("VTK_PHASENET_COMMAND"),
-        "python -m phasenet.predict",
-        "phasenet",
-    ]
-    for candidate in candidates:
-        if not candidate:
-            continue
-        command = str(candidate).strip()
-        if " " in command and _python_module_command_available(command):
-            return command
-        if Path(command).exists():
-            return command
-        resolved = shutil.which(command)
-        if resolved:
-            return resolved
+    # Explicit configuration is authoritative: do not fall through to another backend.
+    command = explicit_command or os.environ.get("SVTK_PHASENET_COMMAND") or os.environ.get("VTK_PHASENET_COMMAND")
+    if not command:
+        return None
+    try:
+        tokens = shlex.split(command)
+    except ValueError:
+        return None
+    if tokens and shutil.which(tokens[0]):
+        return command
     return None
+
 
 
 def require_phasenet(explicit_command: str | None = None) -> str:

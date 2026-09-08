@@ -92,9 +92,10 @@ def test_metric_plan_keeps_requested_transform_columns_and_period_rows() -> None
             "models": ["m1"],
             "components": ["Z"],
             "transforms": ["residual", "ln_residual", "anderson_2004_gof"],
-            "spectral": {"periods_s": [1.0, 2.0]},
+            "spectral": {"periods_s": [1.0, 1.5, 2.0]},
         }
     }
+    data["synthetics"] = {"max_frequency_hz": 1.0}
     config = SpatialVTKConfig(config.config_path, config.root_dir, data)
     plan = metric_plan_from_config(config)
     inventory = pd.DataFrame({"event_id": ["e1"], "station": ["abc"], "component": ["z"]})
@@ -102,7 +103,8 @@ def test_metric_plan_keeps_requested_transform_columns_and_period_rows() -> None
     rows = expected_metric_rows_from_inventory(inventory, plan)
 
     assert len(rows) == 2
-    assert set(rows["period_s"]) == {1.0, 2.0}
+    assert set(rows["period_s"]) == {1.5, 2.0}
+    assert set(rows["passband"]) == {"lowpass 1 Hz"}
     assert rows["requested_transforms"].iloc[0] == "residual,ln_residual,anderson_2004_gof"
     for column in ("residual", "ln_residual", "anderson_2004_gof"):
         assert column in rows.columns
