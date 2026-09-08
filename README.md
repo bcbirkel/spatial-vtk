@@ -11,11 +11,14 @@ with data QC, residual and metric calculations, geologic metadata integration,
 spatial statistics, mapping, and dashboard preparation for understanding model
 performance patterns.
 
+For more details, check out the the public documentation [here](https://bcbirkel.github.io/spatial-vtk/)!
+
 ![Spatial-VTK workflow](https://raw.githubusercontent.com/bcbirkel/spatial-vtk/main/ValidationToolkit_Workflow.png)
 
-## Install
+## Quick References:
+### Install
 
-Install from PyPI:
+The package can be installed from PyPI using:
 
     python -m pip install spatial-vtk
 
@@ -30,7 +33,7 @@ The package imports as `spatial_vtk` and installs the `svtk` command:
     python -c "import spatial_vtk; print(spatial_vtk.__version__)"
     svtk --help
 
-## Structure
+### Package Structure Overview
 
 - `spatial_vtk.io`: metadata preparation, input inventories, waveform
   preprocessing, manifests, and waveform format helpers.
@@ -43,39 +46,8 @@ The package imports as `spatial_vtk` and installs the `svtk` command:
 - `spatial_vtk.visualize`: context figures, QC views, and dashboard data.
 - `spatial_vtk.cli`: command-line entry points.
 
-See the [public documentation](https://bcbirkel.github.io/spatial-vtk/) for
-installation, package overview, examples, API reference, support, and changelog
-pages.
+### Issues/Questions/Troubleshooting
 
-## Reproducible source tutorials (unreleased 0.1.4rc1)
+Review the [documentation](https://bcbirkel.github.io/spatial-vtk/index.html), particularly the [examples](https://bcbirkel.github.io/spatial-vtk/examples/index.html) and [troubleshooting](https://bcbirkel.github.io/spatial-vtk/support/troubleshooting.html) pages. Still having problems or have suggestions for useful additions to the package? Shoot me an email at birkel@usc.edu or open an issue on GitHub. 
 
-This research/alpha package is under active validation. The existing PyPI 0.1.3
-release does not contain these repairs. From this repaired source checkout:
-
-```bash
-python3.12 -m venv .venv
-source .venv/bin/activate
-python -m pip install ".[notebooks,waveforms]"
-export SVTK_NO_BASEMAP=1
-python tools/execute_tutorial_notebooks.py
-```
-
-The source example bundle includes ten original MiniSEED inputs, five events,
-and 30 selected stations, with checksums in `data/examples/`. Examples are not
-included in the wheel. Step 1 generates processed waveforms; Step 2 performs QC;
-Step 3 calculates metrics and native ln(observed / synthetic) residuals.
-Steps 4–7 use those generated results; run Steps 1–3 first.
-See the tutorial index and CLI workflow for launch commands.
-
-Notebooks find the checkout from its root or `docs/examples`. For downloaded
-notebooks set `SVTK_PROJECT_ROOT` to the complete example checkout. Unset
-`SVTK_NO_BASEMAP` to request Esri World Imagery backgrounds.
-
-Base metric/statistics workflows do not require an arrival picker. PhaseNet is
-an optional external TensorFlow installation with an explicit command and model;
-see [the integration contract](docs/phasenet.rst). The PyPI package named
-`phasenet` has a different interface and is not installed by Spatial-VTK.
-
-CI runs unit tests on Python 3.10–3.12 and executes the complete waveform-to-QC-
-to-metrics tutorial on Python 3.12. Sphinx builds documentation without executing
-notebooks; the notebook runner retains execution evidence separately.
+Happy validating!
