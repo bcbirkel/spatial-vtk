@@ -15,7 +15,7 @@ For more details, check out the the public documentation [here](https://bcbirkel
 
 ![Spatial-VTK workflow](https://raw.githubusercontent.com/bcbirkel/spatial-vtk/main/ValidationToolkit_Workflow.png)
 
-## Quick References:
+## Quick References
 ### Install
 
 The package can be installed from PyPI using:
