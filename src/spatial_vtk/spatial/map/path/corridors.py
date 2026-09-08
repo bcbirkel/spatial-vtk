@@ -255,7 +255,7 @@ def _plot_paths(ax: plt.Axes, records_df: pd.DataFrame) -> None:
         Mutates ``ax``.
     """
 
-    sta_lon, sta_lat = _resolve_xy(records_df, lon_candidates=["station_lon", "station_longitude", "sta_lon"], lat_candidates=["station_lat", "station_latitude", "sta_lat"], label="station")
+    sta_lon, sta_lat = _resolve_xy(records_df, lon_candidates=["station_lon", "station_longitude", "sta_lon", "lon"], lat_candidates=["station_lat", "station_latitude", "sta_lat", "lat"], label="station")
     ev_lon, ev_lat = _resolve_xy(records_df, lon_candidates=["event_lon", "event_longitude", "source_lon", "source_longitude"], lat_candidates=["event_lat", "event_latitude", "source_lat", "source_latitude"], label="event")
     for row in records_df.itertuples(index=False):
         ax.plot([getattr(row, ev_lon), getattr(row, sta_lon)], [getattr(row, ev_lat), getattr(row, sta_lat)], color="#202020", alpha=0.58, linewidth=1.15, zorder=5)
@@ -321,7 +321,7 @@ def _set_bounds_from_layers(
     for frame, lon_candidates, lat_candidates, label in [
         (stations_df, ["station_lon", "station_longitude", "sta_lon", "lon", "longitude"], ["station_lat", "station_latitude", "sta_lat", "lat", "latitude"], "station"),
         (events_df, ["event_lon", "event_longitude", "source_lon", "source_longitude", "lon", "longitude"], ["event_lat", "event_latitude", "source_lat", "source_latitude", "lat", "latitude"], "event"),
-        (records_df, ["station_lon", "station_longitude", "sta_lon"], ["station_lat", "station_latitude", "sta_lat"], "station"),
+        (records_df, ["station_lon", "station_longitude", "sta_lon", "lon"], ["station_lat", "station_latitude", "sta_lat", "lat"], "station"),
         (records_df, ["event_lon", "event_longitude", "source_lon", "source_longitude"], ["event_lat", "event_latitude", "source_lat", "source_latitude"], "event"),
     ]:
         if frame is None or frame.empty:

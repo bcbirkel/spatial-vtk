@@ -14,6 +14,9 @@ from typing import Any, Iterable
 import math
 import re
 import warnings
+import os
+import json
+from functools import wraps
 
 from spatial_vtk.config.paths import ROOT_DIR
 
@@ -279,7 +282,8 @@ def _recommended_zoom_for_extent(*, xlim: tuple[float, float], ylim: tuple[float
 def default_basemap_cache_dir() -> Path:
     """Return the default local cache directory for basemap rasters."""
 
-    return (ROOT_DIR / ".cache" / "contextily").resolve()
+    configured = os.environ.get("SVTK_BASEMAP_CACHE")
+    return Path(configured).expanduser().resolve() if configured else (ROOT_DIR / ".cache" / "contextily").resolve()
 
 
 def _basemap_cache_path(
@@ -451,6 +455,29 @@ def cache_contextily_basemap_raster(
     return cache_path
 
 
+def _record_basemap_result(function):
+    """Record actual imagery results on axes and in an optional execution audit."""
+    @wraps(function)
+    def wrapped(ax, **kwargs):
+        record = dict(success=False, source="basemap rendering interrupted")
+        try:
+            result = function(ax, **kwargs)
+            record = dict(success=result[0], source=result[1])
+        except Exception as exc:
+            record = dict(success=False, source=str(exc))
+            raise
+        finally:
+            if ax is not None:
+                ax.spatial_vtk_basemap = record
+            audit = os.environ.get("SVTK_BASEMAP_AUDIT")
+            if audit:
+                with Path(audit).open("a") as handle:
+                    handle.write(json.dumps(dict(record, extent=[*ax.get_xlim(), *ax.get_ylim()] if ax is not None else None)) + "\n")
+        return result
+    return wrapped
+
+
+@_record_basemap_result
 def add_contextily_basemap(
     ax: Any,
     *,
@@ -498,6 +525,17 @@ def add_contextily_basemap(
         error string.
     """
 
+    required = os.environ.get("SVTK_REQUIRE_BASEMAP", "").lower() in {"1", "true", "yes"}
+    if os.environ.get("SVTK_NO_BASEMAP", "").lower() in {"1", "true", "yes"}:
+        if required or str(on_error).lower() == "raise":
+            raise RuntimeError("Basemap required but SVTK_NO_BASEMAP disables imagery. Unset it for final figures.")
+        return False, "disabled"
+    if required:
+        on_error = "raise"
+        fallback_sources = ()  # Final figures must use the requested provider.
+
+
+
     xlim = ax.get_xlim()
     ylim = ax.get_ylim()
     cache_root = Path(cache_dir).expanduser().resolve() if cache_dir is not None else default_basemap_cache_dir()
@@ -521,7 +559,7 @@ def add_contextily_basemap(
                 xlim=(float(xlim[0]), float(xlim[1])),
                 ylim=(float(ylim[0]), float(ylim[1])),
                 cache_dir=cache_root,
-                allow_any_source=True,
+                allow_any_source=not required,
             )
             if covering_cache is not None and _draw_cached_geotiff_basemap(
                 ax,
@@ -595,7 +633,7 @@ def add_contextily_basemap(
             xlim=(float(xlim[0]), float(xlim[1])),
             ylim=(float(ylim[0]), float(ylim[1])),
             cache_dir=cache_root,
-            allow_any_source=True,
+            allow_any_source=not required,
         )
         if covering_cache is not None:
             if _draw_cached_geotiff_basemap(

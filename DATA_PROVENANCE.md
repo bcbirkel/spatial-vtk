@@ -10,8 +10,10 @@ The tutorial dataset is a five-event LA Basin subset under
 `data/examples/example_five_event_subset/`. It includes event metadata, station
 metadata, event-station tables, GeoJSON regions, event JSON files, and local
 paths for observed and synthetic MiniSEED files used by the tutorial notebooks.
-The public repository keeps the lightweight metadata in git; large waveform
-binaries and processed waveform copies stay local.
+The repaired source checkout includes ten original MiniSEED inputs with SHA-256
+checksums in `metadata/waveform_manifest.json`. Step 1 generates processed copies
+under `outputs/`. Neither the wheel nor the PyPI source distribution includes
+example data. No additional research data or preprocessed copies are distributed.
 
 The example events are southern California earthquakes with public USGS event
 pages:
@@ -21,6 +23,16 @@ pages:
 - `ci39812319`: M 4.3, 2 km E of Carson, CA, 2021-09-18.
 - `ci39756418`: M 4.2, 3 km SW of San Bernardino, CA, 2024-01-25.
 - `ci40699207`: M 4.4, 4 km SSE of Highland Park, CA, 2024-08-12.
+
+## Physical units
+
+On 8 September 2026, the dataset owner confirmed that both observed and
+synthetic example waveforms are acceleration in cm/s² (cm/s/s). The examples
+use these stored units directly; no factor-of-100 conversion is applied.
+This declaration supplements the MiniSEED headers, which do not independently
+encode the full unit/conversion history. Derived velocity and displacement
+use cm/s and cm; acceleration PSA uses cm/s². Ln amplitude residuals are
+dimensionless.
 
 ## Observed Records
 

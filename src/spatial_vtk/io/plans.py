@@ -8,6 +8,7 @@ from typing import Any, Sequence
 import argparse
 import re
 
+import numpy as np
 import pandas as pd
 
 from spatial_vtk.config.metric_catalog import metric_group_for
@@ -160,21 +161,31 @@ def expected_metric_rows_from_inventory(
     base = inventory_df.loc[:, ["event_id", "station", "component"]].drop_duplicates()
     for _, item in base.iterrows():
         for model in models:
-            for passband in passbands:
+            for band_index, passband in enumerate(passbands):
                 pmin, pmax = passband
                 passband_label = f"{_format_period_token(pmin)}-{_format_period_token(pmax)}s" if pmin != "" and pmax != "" else ""
                 for metric in metric_names:
                     metric_group = metric_group_for(metric) or (metric_groups[0] if metric_groups else "")
                     period_values: tuple[float | None, ...] = (None,)
-                    if str(metric).upper() in {"PSA", "FAS"} and plan.spectral_periods_s:
-                        period_values = tuple(float(period) for period in plan.spectral_periods_s)
+                    row_band = passband_label
+                    if str(metric).upper() in {"PSA", "FAS"}:
+                        if band_index:
+                            continue
+                        cutoff = plan.synthetic_max_frequency_hz
+                        if cutoff is None or not np.isfinite(cutoff) or cutoff <= 0:
+                            raise ValueError("PSA/FAS require a positive synthetic_max_frequency_hz.")
+                        periods = plan.spectral_periods_s or tuple(np.arange(1.5, 5.1, 0.5))
+                        period_values = tuple(float(period) for period in periods if np.isfinite(period) and period > 1.0 / cutoff)
+                        if not period_values:
+                            raise ValueError("No PSA/FAS periods lie strictly above the simulation-frequency boundary.")
+                        row_band = f"lowpass {cutoff:g} Hz"
                     for period in period_values:
                         payload = {
                             "event_id": str(item["event_id"]),
                             "station": str(item["station"]).upper(),
                             "component": str(item["component"]).upper(),
                             model_column: str(model),
-                            "passband": passband_label,
+                            "passband": row_band,
                             "metric_group": str(metric_group),
                             "metric": str(metric),
                             "period_s": period,

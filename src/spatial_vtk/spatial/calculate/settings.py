@@ -57,7 +57,7 @@ class SpatialStatisticsSettings:
     """
 
     metric: str = "all"
-    value_column: str = "log2_residual"
+    value_column: str = "ln_residual"
     remove_event_mean: bool = True
     min_stations_per_event: int = 2
     min_events_per_station: int = 1
@@ -96,7 +96,7 @@ def spatial_statistics_settings_from_config(cfg: SpatialVTKConfig | None = None)
     region_path = config.path("paths.region_geojson", must_exist=False)
     return SpatialStatisticsSettings(
         metric=str(section.get("metric", "all")),
-        value_column=str(section.get("value_column", section.get("field_mode", "log2_residual"))),
+        value_column=str(section.get("value_column", section.get("field_mode", "ln_residual"))),
         remove_event_mean=_as_bool(section.get("remove_event_mean", True)),
         min_stations_per_event=int(section.get("min_stations_per_event", 2)),
         min_events_per_station=int(section.get("min_events_per_station", 1)),

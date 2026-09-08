@@ -94,6 +94,7 @@ VALUE_COLUMN_LABELS: dict[str, str] = {
     "med_score": "Median GOF score",
     "mean_residual": "Mean observed - synthetic",
     "mean_log2_residual": "Mean log2(observed / synthetic)",
+    "ln_residual_centered": "Event-centered ln(observed / synthetic)",
     "log2_residual_centered": "Event-centered log2(observed / synthetic)",
     "mean_ln_residual": "Mean ln(observed / synthetic)",
     "mean_anderson_2004_gof": "Mean Anderson 2004 GOF",
@@ -197,10 +198,10 @@ COLUMN_DISPLAY_LABELS: dict[str, str] = {
 }
 
 VALUE_COLUMN_ORDER: tuple[str, ...] = (
-    "med_log2_residual",
-    "log2_residual",
     "med_ln_residual",
     "ln_residual",
+    "med_log2_residual",
+    "log2_residual",
     "med_resid",
     "med_residual",
     "residual",

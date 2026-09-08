@@ -31,7 +31,7 @@ def build_station_folium_map(
     df: pd.DataFrame,
     *,
     value_col: str,
-    basemap: str = "Carto Light",
+    basemap: str = "Esri Imagery",
     geojson_paths: list[str | Path] | None = None,
     marker_cluster: bool = True,
     max_markers: int = 2000,
@@ -56,7 +56,7 @@ def build_event_folium_map(
     df: pd.DataFrame,
     *,
     value_col: str,
-    basemap: str = "Carto Light",
+    basemap: str = "Esri Imagery",
     geojson_paths: list[str | Path] | None = None,
     marker_cluster: bool = True,
     max_markers: int = 2000,
@@ -108,7 +108,7 @@ def _point_map(
     if max_markers and len(work) > int(max_markers):
         work = work.sort_values(value_col, key=lambda series: series.abs(), ascending=False, na_position="last").head(int(max_markers))
     center = _map_center(work, lat_col, lon_col)
-    spec = BASEMAPS.get(basemap, BASEMAPS["Carto Light"])
+    spec = BASEMAPS.get(basemap, BASEMAPS["Esri Imagery"])
     fmap = folium.Map(location=center, zoom_start=7, tiles=None, control_scale=True)
     folium.TileLayer(tiles=spec["tiles"], attr=spec.get("attr") or None, name=basemap, control=True).add_to(fmap)
     _add_geojson_overlays(fmap, geojson_paths)

@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "provenance": "See extraction_manifest.json and data/examples/README.md. Byte-for-byte original observed gmprocess and Salvus synthetic inputs; no processed copies.",
+  "files": [
+    {
+      "path": "observed/ci38038071.mseed",
+      "bytes": 11476992,
+      "sha256": "b2f8bb0436256f5fc99b5cb706074df92a17d1cf1b8fa18ecabce8f654970d60"
+    },
+    {
+      "path": "observed/ci38695658.mseed",
+      "bytes": 23076864,
+      "sha256": "a16086298e16720399d5f2f1e06bb3aa8c832ec8125043dac6683c72fc2ca803"
+    },
+    {
+      "path": "observed/ci39756418.mseed",
+      "bytes": 17485824,
+      "sha256": "0aa1f18aef9cce560f5e3ce72d5dde8adff53e94aa837d6b963bda77dfd99cea"
+    },
+    {
+      "path": "observed/ci39812319.mseed",
+      "bytes": 12140544,
+      "sha256": "4d1cbb1f106558bcb3b565327016f6411749b7ad6756e789427863ff22f3309c"
+    },
+    {
+      "path": "observed/ci40699207.mseed",
+      "bytes": 19943424,
+      "sha256": "88dbac4b2aab2e526bccf8c12971f8945ece5447c0a717f303eb4b4b1b668490"
+    },
+    {
+      "path": "synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci38038071.mseed",
+      "bytes": 32071680,
+      "sha256": "406ed8ad6889ea96ed579e492b08ac6116112fbe3258fe603a9cb76704c20199"
+    },
+    {
+      "path": "synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci38695658.mseed",
+      "bytes": 32071680,
+      "sha256": "13f612ac633c2383229fa3508afabfb1d1e282d4a5ac8fdda158729c3a296ba7"
+    },
+    {
+      "path": "synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci39756418.mseed",
+      "bytes": 32071680,
+      "sha256": "705a98a783ffbc5f8dfc4f1478b7d893a21797729d6810e5522a43ba916a22d7"
+    },
+    {
+      "path": "synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci39812319.mseed",
+      "bytes": 32071680,
+      "sha256": "a6e32a4df25a1418aa77cc9e267679f8b6460deb618e2b8c5c6dac17dcf25a46"
+    },
+    {
+      "path": "synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci40699207.mseed",
+      "bytes": 32071680,
+      "sha256": "c1b8314f0aa50a42b3adfd4d7599848adae3d116349bed5c28528556c368bb39"
+    }
+  ]
+}

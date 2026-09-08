@@ -73,12 +73,12 @@ Here is the matching style for event metadata:
    :language: text
    :lines: 1-4
 
-The source checkout includes lightweight LA Basin example metadata under
-``data/examples/example_five_event_subset/metadata/`` plus a dataset manifest
-that describes the companion five-event waveform bundle used by the tutorial
-notebooks. Keep the manifest in git; download or generate the larger observed
-waveform products and synthetic MiniSEED files separately before running the
-full tutorial workflow end to end.
+The repaired source checkout includes the five-event waveform bundle under
+``data/examples/example_five_event_subset/``. Its ten MiniSEED inputs have
+checksums in ``metadata/waveform_manifest.json``. Step 1 generates processed
+waveforms; no preprocessed binary handoff needs to be downloaded separately.
+See :doc:`examples/index` for the sequence. These data are excluded from the
+PyPI wheel.
 
 :download:`Download the example dataset manifest <../data/examples/example_five_event_subset/metadata/example_dataset_manifest.json>`
 

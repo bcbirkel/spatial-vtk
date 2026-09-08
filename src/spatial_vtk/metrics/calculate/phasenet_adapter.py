@@ -9,7 +9,7 @@ Spatial-VTK arrival-pick catalog schema.
 Usage examples
 --------------
 Build a pick catalog from preloaded waveform groups:
-  ``build_phasenet_arrival_pick_catalog(groups, phasenet_command="python -m phasenet.predict", output_catalog="picks.csv", work_dir="phasenet_work")``
+  ``build_phasenet_arrival_pick_catalog(groups, phasenet_command="/path/to/phasenet-env/bin/python /path/to/PhaseNet/phasenet/predict.py", output_catalog="picks.csv", work_dir="phasenet_work")``
 """
 
 from __future__ import annotations
@@ -156,7 +156,15 @@ def run_phasenet(
         Path to PhaseNet's pick CSV.
     """
 
-    resolved_command = phasenet_command or require_phasenet()
+    resolved_command = require_phasenet(phasenet_command)
+    probe = subprocess.run([*shlex.split(resolved_command), "--help"], capture_output=True, text=True, timeout=30)
+    required_flags = ("--data_dir", "--data_list", "--result_dir", "--result_fname", "--model_dir", "--min_p_prob", "--min_s_prob")
+    if probe.returncode or any(flag not in probe.stdout for flag in required_flags):
+        raise RuntimeError("Incompatible PhaseNet command: expected the AI4EPS/PhaseNet TensorFlow numpy CLI. " + probe.stderr[-2000:])
+    if model_dir is None or not (Path(model_dir) / "checkpoint").is_file():
+        raise ValueError("model_dir must contain a pretrained TensorFlow checkpoint. See docs/phasenet.rst.")
+    if not np.isclose(sampling_rate, 100.0):
+        raise ValueError("The supported pretrained PhaseNet model expects 100 Hz broadband input. Resample explicitly before picking.")
     data_path = Path(data_dir).resolve()
     result_path = Path(result_dir).resolve()
     result_path.mkdir(parents=True, exist_ok=True)
@@ -170,7 +178,7 @@ def run_phasenet(
         "--result_dir",
         str(result_path),
         "--result_fname",
-        "picks.csv",
+        "picks",
         "--batch_size",
         "1",
         "--sampling_rate",
@@ -181,13 +189,13 @@ def run_phasenet(
         str(float(min_s_prob)),
     ]
     if model_dir:
-        args = ["--model_dir", str(model_dir), *args]
+        args = ["--model_dir", str(Path(model_dir).resolve()), *args]
     cmd, use_shell = _phase_command(resolved_command, args)
     subprocess.run(cmd, cwd=str(data_path), check=True, shell=use_shell)
     for candidate in (result_path / "picks.csv", result_path / "picks.csv.csv"):
         if candidate.exists():
             return candidate
-    return result_path / "picks.csv"
+    raise RuntimeError("PhaseNet completed without producing a picks CSV in " + str(result_path))
 
 
 def normalize_phasenet_output(
@@ -201,7 +209,13 @@ def normalize_phasenet_output(
     """Convert PhaseNet picks into station-level Spatial-VTK catalog rows."""
 
     picks = pd.read_csv(phasenet_csv)
+    required = {"file_name", "phase_type", "phase_score"}
+    if not required.issubset(picks.columns) or not {"phase_time", "phase_index"}.intersection(picks.columns):
+        raise ValueError("Incompatible PhaseNet output schema: require file_name, phase_type, phase_score and phase_time or phase_index.")
     by_file = {record.file_name: record for record in records}
+    unknown = set(picks["file_name"].astype(str)) - set(by_file)
+    if unknown:
+        raise ValueError(f"PhaseNet output contains unknown input filenames: {sorted(unknown)}")
     rows: list[dict[str, object]] = []
     if picks.empty:
         return pd.DataFrame(columns=REQUIRED_PICK_COLUMNS)
@@ -335,6 +349,10 @@ def _stack_components(components: Mapping[str, object], *, station: str) -> tupl
     median_rate = float(np.median(rates))
     if any(abs(rate - median_rate) > 1e-3 for rate in rates):
         raise ValueError(f"Broadband components for station {station} have incompatible sampling rates: {rates}")
+    if median_rate <= 0 or not np.isfinite(median_rate):
+        raise ValueError("Sampling rate must be positive and finite.")
+    if starts and len(set(pd.to_datetime(starts, utc=True))) != 1:
+        raise ValueError("PhaseNet components must have aligned start times; align explicitly before picking.")
     npts = min(array.size for array in arrays.values())
     if npts < 2:
         raise ValueError(f"Need at least two samples for station {station}.")
@@ -354,7 +372,7 @@ def _component_priority(components: Mapping[str, object]) -> tuple[str, str, str
     """Return preferred component order for PhaseNet input."""
 
     keys = {str(key).upper() for key in components}
-    if {"R", "T", "Z"} & keys:
+    if {"R", "T"} & keys:
         return ("R", "T", "Z")
     return ("E", "N", "Z")
 
@@ -363,17 +381,21 @@ def _phase_time_rel_s(row: pd.Series, record: PhaseNetInputRecord | None = None)
     """Return absolute pick time and seconds relative to catalog origin."""
 
     begin = pd.to_datetime(row.get("begin_time"), utc=True, errors="coerce")
+    if pd.isna(begin) and record is not None:
+        begin = pd.to_datetime(record.time_anchor, utc=True, errors="coerce")
     phase_time = pd.to_datetime(row.get("phase_time"), utc=True, errors="coerce")
-    if not pd.isna(begin) and not pd.isna(phase_time):
-        origin = pd.NaT
-        if record is not None and record.relative_time_origin:
-            origin = pd.to_datetime(record.relative_time_origin, utc=True, errors="coerce")
-        if pd.isna(origin):
-            origin = begin
+    origin = pd.to_datetime(record.relative_time_origin, utc=True, errors="coerce") if record else pd.NaT
+    if pd.isna(origin):
+        origin = begin
+    if not pd.isna(phase_time) and not pd.isna(origin):
         return phase_time.isoformat(), float((phase_time - origin).total_seconds())
-    rel = pd.to_numeric(row.get("phase_index", row.get("phase_time")), errors="coerce")
-    if np.isfinite(rel):
-        return "", float(rel)
+    index = pd.to_numeric(row.get("phase_index"), errors="coerce")
+    if np.isfinite(index) and record is not None and record.sampling_rate > 0:
+        seconds = float(index) / record.sampling_rate
+        if not pd.isna(begin):
+            absolute = begin + pd.to_timedelta(seconds, unit="s")
+            return absolute.isoformat(), float((absolute - origin).total_seconds())
+        return "", seconds
     return "", np.nan
 
 
@@ -383,9 +405,7 @@ def _phase_command(command: str, args: Sequence[str]) -> tuple[object, bool]:
     text = str(command).strip()
     if not text:
         raise ValueError("PhaseNet command is empty.")
-    if any(part in text for part in ("=", " ", "\t")):
-        return " ".join([text, *(shlex.quote(str(arg)) for arg in args)]), True
-    return [text, *map(str, args)], False
+    return [*shlex.split(text), *map(str, args)], False
 
 
 def _phasenet_time_anchor(value: str) -> str:

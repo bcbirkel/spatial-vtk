@@ -29,11 +29,24 @@ jobs:
       - name: Install package and validation extras
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[validation,docs,dashboard,waveforms]"
+          python -m pip install -e ".[validation,docs,dashboard,waveforms,notebooks]"
 
       - name: Run tests
         run: |
           MPLCONFIGDIR=/tmp/mplconfig_svtk python -m pytest -q
+
+      - name: Execute public waveform tutorial
+        if: matrix.python-version == '3.12'
+        env:
+          SVTK_NO_BASEMAP: "1"
+          MPLBACKEND: Agg
+          MPLCONFIGDIR: /tmp/mplconfig_svtk
+        run: python tools/execute_tutorial_notebooks.py --steps 1 2 3 4 5 6 7 --allow-missing-basemaps
+
+      - name: Exercise tutorial dashboards
+        if: matrix.python-version == '3.12'
+        run: |
+          MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/smoke_tutorial_dashboards.py --metrics-root outputs/tutorials/dashboards/metrics_dashboard --summary-root outputs/tutorials/dashboards/dashboard_summaries --trace-summary outputs/tutorials/tables/qc_trace_summary.csv
 
       - name: Compile source and tests
         run: |
@@ -90,7 +103,7 @@ jobs:
       - name: Install package and docs extras
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[validation,docs,dashboard,waveforms]"
+          python -m pip install -e ".[validation,docs,dashboard,waveforms,notebooks]"
 
       - name: Install Pandoc
         run: |
@@ -101,6 +114,9 @@ jobs:
         run: |
           MPLCONFIGDIR=/tmp/mplconfig_svtk python -m sphinx -W -b html docs docs/_build/html
 
+      - name: Check generated documentation search
+        run: node tools/check_documentation_search.mjs docs/_build/html
+
       - name: Build source distribution and wheel
         run: |
           python -m build --sdist --wheel
@@ -108,6 +124,7 @@ jobs:
       - name: Check package metadata
         run: |
           python -m twine check dist/*
+          python tools/check_release_artifacts.py
 
       - name: Inspect wheel contents
         run: |
@@ -130,3 +147,12 @@ jobs:
               raise SystemExit("Wheel does not contain spatial_vtk.")
           print(f"checked {wheels[0].name}: {len(names)} files")
           PY
+
+      - name: Verify base wheel outside checkout
+        run: |
+          SVTK_CHECKOUT="$PWD"
+          python -m venv "$RUNNER_TEMP/svtk-base"
+          "$RUNNER_TEMP/svtk-base/bin/python" -m pip install dist/*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/svtk-base/bin/python" "$SVTK_CHECKOUT/tools/verify_base_installation.py" --snapshot "$SVTK_CHECKOUT/data/examples/data_formats/example_metrics_large_qc_passed.parquet" --output "$RUNNER_TEMP/svtk-base-proof.json"
+          "$RUNNER_TEMP/svtk-base/bin/svtk" --help

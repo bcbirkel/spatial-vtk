@@ -67,6 +67,7 @@ class _LoadedSide:
     data: np.ndarray
     dt: float
     valid_mask: np.ndarray | None = None
+    start_s: float = 0.0
 
 
 def run_metric_tasks(
@@ -121,28 +122,41 @@ def calculate_task_rows(
     """
 
     lookup = qc_lookup or {}
-    observed = _load_and_prepare_side(
-        task.obs_waveform_path,
-        task.station,
-        task.component,
-        task.period_min_s,
-        task.period_max_s,
-        task.waveform_lowpass_hz,
-        task.waveform_resample_hz,
-        task.waveform_filter_order,
-        waveform_cache=waveform_cache,
-    ) if task.obs_waveform_path else None
-    synthetic = _load_and_prepare_side(
-        task.syn_waveform_path,
-        task.station,
-        task.component,
-        task.period_min_s,
-        task.period_max_s,
-        task.waveform_lowpass_hz,
-        task.waveform_resample_hz,
-        task.waveform_filter_order,
-        waveform_cache=waveform_cache,
-    ) if task.syn_waveform_path else None
+    spectral = bool(set(task.metrics).intersection(SPECTRAL_METRICS))
+    audit = {}
+    if spectral:
+        if not task.spectral_preprocessing or set(task.metrics) - SPECTRAL_METRICS or task.period_min_s is not None or task.period_max_s is not None:
+            raise ValueError("Replan PSA/FAS tasks: spectral metrics require separate raw-waveform lowpass tasks, without a passband.")
+        cutoff = task.synthetic_max_frequency_hz
+        if cutoff is None or not np.isfinite(cutoff) or cutoff <= 0 or any(not np.isfinite(p) or p <= 1.0 / cutoff for p in task.spectral_periods_s):
+            raise ValueError("PSA/FAS periods must be strictly above 1 / synthetic_max_frequency_hz.")
+        observed, synthetic, audit = _prepare_spectral_sides(task, waveform_cache)
+        # Passband QC windows and relative spectral amplitudes do not describe
+        # these raw, common-window lowpass records.
+        lookup = {}
+    else:
+        observed = _load_and_prepare_side(
+            task.obs_waveform_path,
+            task.station,
+            task.component,
+            task.period_min_s,
+            task.period_max_s,
+            task.waveform_lowpass_hz,
+            task.waveform_resample_hz,
+            task.waveform_filter_order,
+            waveform_cache=waveform_cache,
+        ) if task.obs_waveform_path else None
+        synthetic = _load_and_prepare_side(
+            task.syn_waveform_path,
+            task.station,
+            task.component,
+            task.period_min_s,
+            task.period_max_s,
+            task.waveform_lowpass_hz,
+            task.waveform_resample_hz,
+            task.waveform_filter_order,
+            waveform_cache=waveform_cache,
+        ) if task.syn_waveform_path else None
     if task.output_mode in {"residual", "gof", "full"} and (observed is None or synthetic is None):
         raise ValueError(f"Task {task.task_id} requires both observed and synthetic waveforms for output_mode={task.output_mode!r}.")
     rows: list[dict[str, Any]] = []
@@ -157,6 +171,9 @@ def calculate_task_rows(
             rows.append(_calculate_pair_metric_row(task, metric, group, observed, synthetic, lookup))
         else:
             raise ValueError(f"Unsupported metric in workflow task: {metric!r}")
+    if spectral:
+        for row in rows:
+            row.update(audit)
     return rows
 
 
@@ -244,15 +261,15 @@ def _calculate_spectral_metric_rows(
         synthetic_for_period = _apply_qc_valid_window(synthetic, syn_qc) if task.use_qc else synthetic
         obs_ok = _side_ok(task, obs_qc, _side_available(observed_for_period))
         syn_ok = _side_ok(task, syn_qc, _side_available(synthetic_for_period))
-        obs_values = _calculate_spectral_values(metric, _valid_data(observed_for_period), observed_for_period.dt, periods) if observed_for_period is not None else np.full(len(periods), np.nan)
-        syn_values = _calculate_spectral_values(metric, _valid_data(synthetic_for_period), synthetic_for_period.dt, periods) if synthetic_for_period is not None else np.full(len(periods), np.nan)
+        obs_values = _calculate_spectral_values(metric, _valid_data(observed_for_period), observed_for_period.dt, (period_s,)) if observed_for_period is not None else np.full(len(periods), np.nan)
+        syn_values = _calculate_spectral_values(metric, _valid_data(synthetic_for_period), synthetic_for_period.dt, (period_s,)) if synthetic_for_period is not None else np.full(len(periods), np.nan)
         comparison_ok = _comparison_ok(task, obs_ok, syn_ok)
         rows.extend(
             build_spectral_metric_rows(
                 metric=metric,
                 periods_s=[period_s],
-                values_obs=[obs_values[idx] if obs_ok and task.output_mode != "synthetic" else np.nan],
-                values_syn=[syn_values[idx] if syn_ok and task.output_mode != "observed" else np.nan],
+                values_obs=[obs_values[0] if obs_ok and task.output_mode != "synthetic" else np.nan],
+                values_syn=[syn_values[0] if syn_ok and task.output_mode != "observed" else np.nan],
                 transforms=task.transforms if comparison_ok else (),
                 **_context(task),
                 **_qc_payload(task, obs_qc, syn_qc, obs_ok, syn_ok, comparison_ok),
@@ -375,7 +392,7 @@ def _load_and_prepare_side(
     return _LoadedSide(bandpassed.data, side.dt, valid_mask)
 
 
-def _load_component_samples(path: str, station: str, component: str, *, waveform_cache: dict[str, Any] | None = None) -> _LoadedSide:
+def _load_component_samples(path: str, station: str, component: str, *, waveform_cache: dict[str, Any] | None = None, preserve_dtype: bool = False) -> _LoadedSide:
     """Load samples and sample interval for one station/component."""
 
     source = str(path)
@@ -415,10 +432,61 @@ def _load_component_samples(path: str, station: str, component: str, *, waveform
             f"Waveform file does not contain station/component {station_token}.{component_token}: {path}. "
             f"Available station/components include: {available[:12]}"
         )
-    samples = _trace_data(selected)
+    samples = np.asarray(selected.get("data") if isinstance(selected, dict) else selected.data).reshape(-1) if preserve_dtype else _trace_data(selected)
     if samples.size == 0:
         raise ValueError(f"Waveform file contains no samples: {path}")
-    return _LoadedSide(samples, _trace_dt(selected), np.ones(samples.size, dtype=bool))
+    stats = selected.get("stats", {}) if isinstance(selected, dict) else getattr(selected, "stats", {})
+    start = _stat_value(stats, "starttime", 0.0)
+    start_s = float(pd.Timestamp(start).timestamp()) if isinstance(start, str) and start.strip() else float(start or 0.0)
+    return _LoadedSide(samples, _trace_dt(selected), np.ones(samples.size, dtype=bool), start_s)
+
+
+def _prepare_spectral_sides(task, waveform_cache):
+    """Port of the research shared PSA/FAS common-window preprocessing.
+
+    Demean and cosine-taper the full raw records, apply one fourth-order
+    zero-phase lowpass, then interpolate their overlap to a shared 25 Hz grid.
+    """
+    from obspy import Trace
+    from scipy.signal import butter, sosfiltfilt
+
+    sides = [_load_component_samples(path, task.station, task.component, waveform_cache=waveform_cache, preserve_dtype=True)
+             if path else None for path in (task.obs_waveform_path, task.syn_waveform_path)]
+    available = [side for side in sides if side is not None]
+    if not available:
+        raise ValueError("Spectral task has no waveform inputs.")
+    if any(side.data.size < 2 or not np.isfinite(side.data).all() for side in available):
+        raise ValueError("Spectral inputs require at least two finite samples.")
+    start = np.ceil(max(side.start_s for side in available) * 25.0) / 25.0
+    end = np.floor(min(side.start_s + (side.data.size - 1) * side.dt for side in available) * 25.0) / 25.0
+    npts = int(round((end - start) * 25.0)) + 1
+    if npts < 2:
+        raise ValueError("Spectral inputs have no common time window with two samples.")
+    grid = start + np.arange(npts) / 25.0
+    prepared = []
+    cutoffs = []
+    for side in sides:
+        if side is None:
+            prepared.append(None)
+            cutoffs.append(np.nan)
+            continue
+        trace = Trace(side.data.copy())
+        trace.detrend("demean")
+        trace.taper(max_percentage=0.05, type="cosine")
+        rate = 1.0 / side.dt
+        cutoff = min(task.synthetic_max_frequency_hz, 0.45 * rate, 9.5 if rate > 25.0 else np.inf)
+        filtered = sosfiltfilt(butter(4, cutoff, btype="lowpass", fs=rate, output="sos"), trace.data.astype(float))
+        values = np.interp(grid, side.start_s + np.arange(side.data.size) * side.dt, filtered)
+        if not np.isfinite(values).all():
+            raise ValueError("Spectral preprocessing produced nonfinite samples.")
+        prepared.append(_LoadedSide(values, 0.04, start_s=start))
+        cutoffs.append(cutoff)
+    audit = dict(spectral_processing="demean; cosine taper 5%; lowpass order 4 zero phase; common-grid linear interpolation",
+                 spectral_lowpass_obs_hz=cutoffs[0], spectral_lowpass_syn_hz=cutoffs[1],
+                 spectral_sample_rate_hz=25.0, spectral_common_start_s=start,
+                 spectral_common_end_s=end, spectral_npts=npts,
+                 spectral_raw_obs_path=task.obs_waveform_path, spectral_raw_syn_path=task.syn_waveform_path)
+    return prepared[0], prepared[1], audit
 
 
 def _processing_valid_mask(sample_count: int, *, lowpass_hz: float | None = None, resample_hz: float | None = None) -> np.ndarray:
@@ -547,7 +615,7 @@ def _build_spectral_qc(
     """Build side-specific spectral QC lookup for one task."""
 
     out: dict[tuple[str, str, str], dict[str, Any]] = {}
-    if not task.spectral_periods_s:
+    if not task.spectral_periods_s or not set(task.metrics).intersection(SPECTRAL_METRICS):
         return out
     for source, side in (("observed", observed), ("synthetic", synthetic)):
         if side is None:
@@ -565,7 +633,7 @@ def _build_spectral_qc(
                     min_cycles_in_record=task.spectral_min_cycles_in_record,
                     synthetic_max_frequency_hz=task.synthetic_max_frequency_hz,
                     source=source,
-                    disable_relative_amplitude_qc=task.disable_spectral_relative_amplitude_qc,
+                    disable_relative_amplitude_qc=True if task.spectral_preprocessing else task.disable_spectral_relative_amplitude_qc,
                 )
                 if metric == "PSA"
                 else qc_fas_periods(
@@ -576,7 +644,7 @@ def _build_spectral_qc(
                     min_cycles_in_record=task.spectral_min_cycles_in_record,
                     synthetic_max_frequency_hz=task.synthetic_max_frequency_hz,
                     source=source,
-                    disable_relative_amplitude_qc=task.disable_spectral_relative_amplitude_qc,
+                    disable_relative_amplitude_qc=True if task.spectral_preprocessing else task.disable_spectral_relative_amplitude_qc,
                 )
             )
             for _, row in qc.iterrows():

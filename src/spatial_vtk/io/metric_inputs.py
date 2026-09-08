@@ -26,6 +26,7 @@ METRIC_WAVEFORM_COLUMNS: tuple[str, ...] = (
     "component",
     "model",
     "waveform_path",
+    "raw_waveform_path",
     "dt",
     "sampling_rate",
     "starttime",
@@ -53,6 +54,7 @@ METRIC_QC_COLUMNS: tuple[str, ...] = (
 )
 
 WAVEFORM_ALIASES: dict[str, tuple[str, ...]] = {
+    "raw_waveform_path": ("raw_waveform_path",),
     "source": ("source", "waveform_source", "waveform_role", "role"),
     "event_id": ("event_id", "event", "event_title", "id"),
     "station": ("station", "station_code", "station_name", "Station"),

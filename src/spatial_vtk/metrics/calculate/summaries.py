@@ -105,7 +105,7 @@ def metric_stems_by_family(df: pd.DataFrame, family: str) -> list[str]:
     return stems
 
 
-def metric_residual_series(df: pd.DataFrame, metric_stem: str, *, log_base: str = "log2") -> pd.Series | None:
+def metric_residual_series(df: pd.DataFrame, metric_stem: str, *, log_base: str = "ln") -> pd.Series | None:
     """Return finite observed/synthetic residuals for one metric stem.
 
     Parameters
@@ -186,7 +186,7 @@ def build_station_residual_table(
     df: pd.DataFrame,
     metric_stem: str,
     *,
-    log_base: str = "log2",
+    log_base: str = "ln",
 ) -> tuple[pd.DataFrame, str] | tuple[None, None]:
     """Build one station-mean residual table for a metric stem.
 
@@ -322,7 +322,7 @@ def summarize_metric_scores(
 def summarize_long_metric_table(
     df: pd.DataFrame,
     *,
-    value_col: str = "log2_residual",
+    value_col: str = "ln_residual",
     group_cols: Sequence[str] = ("model", "station", "passband", "metric"),
 ) -> pd.DataFrame:
     """Summarize a public long metric table.

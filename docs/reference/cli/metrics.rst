@@ -149,6 +149,7 @@ svtk metrics plan
 .. code-block:: bash
 
    svtk metrics plan [-h] [--observed-inventory OBSERVED_INVENTORY]
+                         [--waveforms-preprocessed]
                          [--synthetic-inventory SYNTHETIC_INVENTORY]
                          [--config CONFIG] [--run-scenario RUN_SCENARIO]
                          [--metric METRICS] [--metric-group METRIC_GROUPS]
@@ -177,6 +178,10 @@ svtk metrics plan
      - No
      - 
      - Value: ``observed_inventory``. Observed metric waveform inventory.
+   * - ``--waveforms-preprocessed``
+     - No
+     - Flag
+     - Inputs already have configured preprocessing; do not repeat lowpass/resampling.
    * - ``--synthetic-inventory``
      - No
      - 
@@ -330,7 +335,7 @@ svtk metrics slurm
 .. code-block:: bash
 
    svtk metrics slurm [-h] --manifest MANIFEST --output OUTPUT --config
-                          CONFIG [--run-scenario RUN_SCENARIO]
+                          CONFIG [--run-scenario RUN_SCENARIO] [--submit]
 
 .. rubric:: Parameters
 
@@ -362,3 +367,34 @@ svtk metrics slurm
      - No
      - 
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+   * - ``--submit``
+     - No
+     - Flag
+     - Submit the script with sbatch after writing it.
+
+Spectral waveform processing
+----------------------------
+
+PSA and FAS run once per waveform pair/component, independently of configured
+passbands. Supply raw acceleration files in ``raw_waveform_path`` in each
+inventory; when this optional column is absent, ``waveform_path`` must itself
+contain raw records. ``--waveforms-preprocessed`` applies to ordinary metrics;
+it does not bypass the spectral lowpass. Tutorial inventories retain both paths.
+
+The spectral branch demeans and cosine-tapers each full raw record (5 percent),
+applies one fourth-order zero-phase lowpass at ``synthetics.max_frequency_hz``,
+and linearly interpolates the common time window onto a 25 Hz grid. The cutoff
+is capped at 45 percent of the input sample rate and at 9.5 Hz when downsampling.
+PSA uses 5 percent damping; FAS uses its Hann-windowed amplitude calculation.
+The example period grid is 1.5, 2, 2.5, 3, 3.5, 4, 4.5, and 5 seconds.
+Both metrics exclude periods less than or equal to the reciprocal simulation
+frequency (1 second for a 1 Hz simulation). An entirely unsupported request
+raises an error; partially unsupported grids are reduced in the task manifest.
+
+Spectral tasks are labeled ``lowpass 1 Hz`` for this example. They do not inherit
+passband QC windows or relative-amplitude rejection at 0.25. Record-length QC
+still requires the configured minimum number of cycles, and nonfinite values
+cannot yield usable comparisons. Lowpass settings, raw paths, and the actual
+common grid are recorded on output rows. These processing records do not establish
+physical acceleration units; those still require source calibration provenance.
+Existing mixed or bandpassed spectral task manifests must be replanned.

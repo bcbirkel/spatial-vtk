@@ -1,6 +1,30 @@
 Changelog
 =========
 
+0.1.4rc1 (unreleased)
+---------------------
+
+* Include verified five-event waveform inputs; generate processed handoffs in Step 1.
+* Discover tutorial roots portably and execute real waveform metrics in Step 3.
+* Repair CLI inventory creation, Step 6 waveform paths, and explicit dashboard launches.
+* Remove the incompatible mandatory PyPI PhaseNet dependency; validate the external
+  TensorFlow command, model, channel ordering, and output time/schema contract.
+* Add deterministic basemap opt-out and notebook execution in CI.
+* Calculate PSA/FAS independently of amplitude passbands after a single 1 Hz
+  lowpass; use 1.5–5 s periods at 0.5 s spacing, excluding the simulation boundary.
+* Default to ln(observed / synthetic), retaining explicit log2 support.
+  Every tutorial metric figure now uses Step 3's native calculated results.
+* Require imagery for reviewed tutorial figures, reuse cached Esri tiles, and
+  record basemap success and figure hashes.
+* Remove misleading slope/correlation labels from LOWESS trends and prevent
+  regional boxplot labels from colliding with comparison tables.
+* Add function/module indexes to the reference sidebar and prevent unsupported
+  local-file search-summary fetches.
+* Treat empty dashboard model/passband selections as zero rows.
+* Record owner-confirmed cm/s² units for the example acceleration waveforms.
+* Limit advertised Python support to the CI matrix (3.10–3.12).
+
+
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after
    external Sigstore/Rekor ``502`` errors blocked the ``0.1.2`` publish.
@@ -215,3 +239,16 @@ Planned additions are tracked in :doc:`future_features`.
    :hidden:
 
    future_features
+
+Spectral repair awaiting publication
+------------------------------------
+
+* PSA/FAS now use separate raw-waveform common-window lowpass tasks, not the
+  amplitude passbands. The examples request 1.5–5 s in 0.5 s steps with a 1 Hz
+  lowpass; both spectra exclude the exact simulation-frequency boundary.
+* Preserve raw waveform paths through tutorial inventory handoffs, report
+  spectral preprocessing on result rows, and require old spectral manifests
+  to be replanned. Bandpass and relative-amplitude QC are not reused for spectra.
+
+* Publish freshly executed tutorial outputs in the documentation, with required
+  cached Esri imagery; keep generated notebooks out of version control.

@@ -1396,6 +1396,9 @@ def _scatter_fit_label(method_name: str, x: np.ndarray, y: np.ndarray, fit_x: np
     if method_name in {"point-to-point", "points", "connect"}:
         return "_nolegend_"
     prefix = f"{label} " if label else ""
+    if method_name.lower().split(":")[-1] == "lowess":
+        return f"{prefix}LOWESS trend"
+
     slope, fit_r = _fit_line_stats(x, y, fit_x, fit_y)
     if method_name.startswith("best:"):
         fit_name = _scatter_fit_display_name(method_name.split(":", 1)[1])
@@ -1696,6 +1699,8 @@ def _resolve_value_col(data: pd.DataFrame, value_col: str | None) -> str:
         "synthetic": "value_syn",
         "syn": "value_syn",
         "sim": "value_syn",
+        "lnresidualcentered": "ln_residual_centered",
+        "centeredlnresidual": "ln_residual_centered",
         "log2residualcentered": "log2_residual_centered",
         "log2residualscentered": "log2_residual_centered",
         "centeredlog2residual": "log2_residual_centered",
@@ -1703,14 +1708,16 @@ def _resolve_value_col(data: pd.DataFrame, value_col: str | None) -> str:
     }
     if value_col is not None:
         requested = aliases.get(_column_key(value_col), aliases.get(str(value_col).strip().lower(), str(value_col)))
+        if requested == "ln_residual_centered":
+            return _resolve_or_create_centered_value(data, source_col="ln_residual", output_col="ln_residual_centered")
         if requested == "log2_residual_centered":
             return _resolve_or_create_centered_value(data, source_col="log2_residual", output_col="log2_residual_centered")
         return _resolve_scatter_column(data, requested, required=True)
-    for candidate in ("log2_residual", "residual", "score", "value_obs", "value_syn", "value"):
+    for candidate in ("ln_residual", "log2_residual", "residual", "score", "value_obs", "value_syn", "value"):
         column = _resolve_scatter_column(data, candidate, required=False)
         if column is not None:
             return column
-    raise KeyError("Could not infer a metric value column. Pass value_col='observed', 'synthetic', 'log2_residual', or another numeric value column.")
+    raise KeyError("Could not infer a metric value column. Pass value_col='observed', 'synthetic', 'ln_residual', or another numeric value column.")
 
 
 def _resolve_or_create_centered_value(data: pd.DataFrame, *, source_col: str, output_col: str) -> str:

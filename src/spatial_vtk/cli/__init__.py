@@ -355,6 +355,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
 
     plan = metrics_sub.add_parser("plan", help="Plan metric tasks from inventories and config.")
     plan.add_argument("--observed-inventory", default=None, help="Observed metric waveform inventory.")
+    plan.add_argument("--waveforms-preprocessed", action="store_true", help="Ordinary metric inputs already have configured preprocessing. PSA/FAS still require raw_waveform_path (or raw waveform_path) and their spectral lowpass.")
     plan.add_argument("--synthetic-inventory", default=None, help="Synthetic metric waveform inventory.")
     plan.add_argument("--config", default=None, help="Spatial-VTK config file.")
     plan.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
@@ -708,6 +709,9 @@ def _cmd_metrics_plan(args: argparse.Namespace) -> int:
 
     config = SpatialVTKConfig.from_file(args.config, run_scenario=args.run_scenario)
     plan = metric_plan_from_config(config, command="metrics.calculate", overrides=_metric_plan_overrides(args))
+    if args.waveforms_preprocessed:
+        from dataclasses import replace
+        plan = replace(plan, waveform_lowpass_hz=None, waveform_resample_hz=None)
     tasks = plan_metric_tasks(args.observed_inventory, args.synthetic_inventory, plan=plan, use_qc=not args.no_qc)
     if args.manifest:
         batch_dir = args.batch_output_dir or str(Path(args.output).with_suffix("")) + "_batches"

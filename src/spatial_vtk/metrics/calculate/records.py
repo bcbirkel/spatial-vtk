@@ -88,7 +88,7 @@ class MetricValueRow:
     period_s: float | None = None
     context: dict[str, Any] = field(default_factory=dict)
     qc: dict[str, Any] = field(default_factory=dict)
-    transforms: tuple[str, ...] = VALID_TRANSFORMS
+    transforms: tuple[str, ...] = ("ln_residual",)
 
     def to_dict(self) -> dict[str, Any]:
         """Return this metric row as a flat dictionary.
@@ -134,7 +134,7 @@ def build_metric_value_row(
     value_obs: float = np.nan,
     value_syn: float = np.nan,
     period_s: float | None = None,
-    transforms: tuple[str, ...] = VALID_TRANSFORMS,
+    transforms: tuple[str, ...] = ("ln_residual",),
     **metadata: Any,
 ) -> dict[str, Any]:
     """Build one standardized long metric row.
@@ -181,7 +181,7 @@ def build_spectral_metric_rows(
     periods_s,
     values_obs=None,
     values_syn=None,
-    transforms: tuple[str, ...] = VALID_TRANSFORMS,
+    transforms: tuple[str, ...] = ("ln_residual",),
     **metadata: Any,
 ) -> list[dict[str, Any]]:
     """Build one long metric row per spectral period.

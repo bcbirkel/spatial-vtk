@@ -1346,7 +1346,7 @@ def plot_event_trace_comparison(
             ax.set_yticks(y_values)
             ax.set_yticklabels(subset[station_col].astype(str).tolist(), fontsize=7)
     axes[0].set_ylabel("Distance (km)" if distance_col in df.columns else "Station")
-    axes[0].legend(loc="upper right")
+    axes[0].legend(loc="upper left", bbox_to_anchor=(1.01, 1.0))
     fig.suptitle(title_with_subtitle(title, filter_label), y=0.99)
     fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.95))
     return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)

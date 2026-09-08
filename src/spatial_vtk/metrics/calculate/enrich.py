@@ -192,9 +192,9 @@ def _apply_transform_columns(
     out = df.copy()
     residual_candidates = [residual_column] if residual_column else []
     if "residual" not in out.columns or out["residual"].isna().all():
-        residual_candidates.extend(["log2_residual", "ln_residual", "residual"])
+        residual_candidates.extend(["ln_residual", "log2_residual", "residual"])
     for column in residual_candidates:
-        if column and column in out.columns:
+        if column and column in out.columns and (column == residual_column or out[column].notna().any()):
             out["residual"] = pd.to_numeric(out[column], errors="coerce")
             break
     score_candidates = [score_column] if score_column else []
